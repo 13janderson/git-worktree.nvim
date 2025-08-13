@@ -1,3 +1,4 @@
+-- vim.g.git_worktree_log_level = "debug"
 local worktree = require("git-worktree")
 local git = require("git-worktree.git")
 local Job = require('plenary.job')

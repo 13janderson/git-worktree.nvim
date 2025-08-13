@@ -31,9 +31,9 @@ This plugin is [available on LuaRocks][luarocks-url]:
 
 ```lua
 {
-  'polarmutex/git-worktree.nvim',
+  '13janderson/git-worktree.nvim',
   version = '^2',
-  dependencies = { "nvim-lua/plenary.nvim" }
+  dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim"}
 }
 ```
 
