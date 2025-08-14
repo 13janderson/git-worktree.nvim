@@ -27,8 +27,6 @@ welcomed to fix that).
 
 ## Installation
 
-This plugin is [available on LuaRocks][luarocks-url]:
-
 ```lua
 {
   '13janderson/git-worktree.nvim',
@@ -39,26 +37,11 @@ This plugin is [available on LuaRocks][luarocks-url]:
 
 ## Quick Setup
 
-This plugin does not require to call setup function, but you should setup your default hooks
+This plugin does not require to call setup function, everything comes pre-configured in an opionated way, this configuration is loaded on neovim startup. See [plugin](./plugin/plugin.lua).
 
-Example Hook configuration
-
-```lua
-local Hooks = require("git-worktree.hooks")
-local config = require('git-worktree.config')
-local update_on_switch = Hooks.builtins.update_current_buffer_on_switch
-
-Hooks.register(Hooks.type.SWITCH, function (path, prev_path)
-	vim.notify("Moved from " .. prev_path .. " to " .. path)
-	update_on_switch(path, prev_path)
-end)
-
-Hooks.register(Hooks.type.DELETE, function ()
-	vim.cmd(config.update_on_change_command)
-end)
 ```
 
-## Features
+## Base Features
 
 ## Usage
 
@@ -79,6 +62,25 @@ require("git-worktree").switch_worktree("feat-69")
 -- Example:
 require("git-worktree").delete_worktree("feat-69")
 ```
+
+## Additional Features
+
+Fixes bug with harpoon usage where harpoon would fail to correctly load new data on the cwd changing when we switch workspaces... this is resolved by simply reloading harpoon entirely.
+
+Keymaps:
+- `<leader>wa` prompts you for a worktree name, creates a worktree with that name and switches you to that worktree.
+- `<leader>ws` to load telescope picker... within this picker `<C-d>` deletes
+an entry, `<CR>` selects an entry and switches you to that workspace, `<C-f>`
+force deletes an entry.
+- `<leader>wl` to go to the previous workspace, if one exists.
+
+
+Git Submodules are automatically updated on changing between worktrees.
+
+**Worktree state is persisted between sessions. That is, the current and previous worktrees are remembered`
+- If you close neovim whilst in a worktree, you will go back into that worktree on neovim restarting.
+- Alternate/previous sessions are also persisted.
+
 
 ## Advanced Configuration
 

@@ -21,7 +21,13 @@ vim.keymap.set("n", "<leader>wa", function()
     if (not success) then
         return
     end
-    local branch_name = string.format("feat/%s", worktree_name)
+
+    local branch_name
+    if git.has_branch(worktree) then
+        branch_name = worktree
+    else
+        branch_name = string.format("feat/%s", worktree_name)
+    end
 
     -- Put new worktrees in git root dir
     local worktree_path = git.gitroot_dir() .. "/" .. worktree_name
