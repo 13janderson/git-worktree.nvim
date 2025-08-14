@@ -14,24 +14,18 @@ if state_current_worktree then
     worktree.switch_worktree(state_current_worktree)
 end
 
-
 -- Keybindings
 vim.keymap.set("n", "<leader>wa", function()
+    -- TODO, is there anyway to add autocomplete for git branches here?
     local success, worktree_name = pcall(function() return vim.fn.input(string.format("worktree:")) end)
     if (not success) then
         return
     end
 
-    local branch_name
-    if git.has_branch(worktree) then
-        branch_name = worktree
-    else
-        branch_name = string.format("feat/%s", worktree_name)
-    end
-
+    -- Check if git has the branch with this name already, otherwise checkout a feature branch
     -- Put new worktrees in git root dir
     local worktree_path = git.gitroot_dir() .. "/" .. worktree_name
-    worktree.create_worktree(worktree_path, branch_name)
+    worktree.create_worktree(worktree_path, worktree_name)
 end)
 
 vim.keymap.set("n", "<leader>ws", function()
@@ -50,7 +44,6 @@ vim.keymap.set("n", "<leader>wl", function()
 end)
 
 -- Hooks
-
 local Hooks = require("git-worktree.hooks")
 local config = require('git-worktree.config')
 local update_on_switch = Hooks.builtins.update_current_buffer_on_switch
@@ -79,8 +72,6 @@ local function ReloadLazyPlugin(plugin_name)
     end
 end
 
--- So harpoon does not seem to read in new data on the directory changing for some reason?
--- Switch current active buffers when changing between worktrees
 Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
     vim.notify("On Worktree " .. path)
 

@@ -74,10 +74,10 @@ function M.gitroot_dir()
     if code ~= 0 then
         Log.error(
             'Error in determining the git root dir: code:'
-                .. tostring(code)
-                .. ' out: '
-                .. table.concat(stdout, '')
-                .. '.'
+            .. tostring(code)
+            .. ' out: '
+            .. table.concat(stdout, '')
+            .. '.'
         )
         return nil
     end
@@ -100,10 +100,10 @@ function M.toplevel_dir()
     if code ~= 0 then
         Log.error(
             'Error in determining the git root dir: code:'
-                .. tostring(code)
-                .. ' out: '
-                .. table.concat(stdout, '')
-                .. '.'
+            .. tostring(code)
+            .. ' out: '
+            .. table.concat(stdout, '')
+            .. '.'
         )
         return nil
     end
@@ -112,6 +112,7 @@ function M.toplevel_dir()
 end
 
 function M.has_branch(branch, opts, cb)
+    print("branch", branch)
     local found = false
     local args = { 'branch', '--format=%(refname:short)' }
     opts = opts or {}
@@ -123,6 +124,9 @@ function M.has_branch(branch, opts, cb)
         command = 'git',
         args = args,
         on_stdout = function(_, data)
+            if data == branch then
+                print("data", data)
+            end
             found = found or data == branch
         end,
         cwd = vim.loop.cwd(),
