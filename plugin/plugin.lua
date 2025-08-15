@@ -1,4 +1,3 @@
--- vim.g.git_worktree_log_level = "debug"
 local worktree = require("git-worktree")
 local git = require("git-worktree.git")
 local Job = require('plenary.job')
@@ -56,24 +55,9 @@ local function GitSubmoduleUpdate()
     })
 end
 
--- local function GetHarpoonData(path)
---     -- This succesfully reads our data first but then fails subsequently
---     local data = harpoon_data.Data:new(harpoon_config:get_default_config())
---     return data:data(path, harpoon_default_list)
--- end
-
-local function ReloadLazyPlugin(plugin_name)
-    local plugin = require("lazy.core.config").plugins[plugin_name]
-    if plugin then
-        package.loaded[plugin] = nil
-        require("lazy.core.loader").reload(plugin)
-    else
-        print(plugin_name .. "not reloaded")
-    end
-end
-
 Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
     vim.notify("On Worktree " .. path)
+    update_on_switch(path, prev_path)
 
     local updated_data = {
         current_worktree = path
@@ -85,14 +69,7 @@ Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
 
     state:update(updated_data)
 
-    -- Hack to get arround strange harpoon behaviour
-    -- Harpoon is not reloading its data upon the current_directory of nvim being changed
-    -- Simply reloading the plugin gets around this... had initially tried digging into harpoon
-    -- itself but its a fucking mess.
-    ReloadLazyPlugin("harpoon2")
-
     GitSubmoduleUpdate()
-    update_on_switch(path, prev_path)
 end)
 
 

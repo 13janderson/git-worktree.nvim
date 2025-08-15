@@ -22,26 +22,27 @@ function WorktreeState:new()
     return state
 end
 
----@return string
+---@return Path | nil
 function WorktreeState:path()
     local git_dir = git:gitroot_dir()
     local git_repo = nil
 
     if git_dir ~= nil then
         git_repo = vim.fn.fnamemodify(git_dir, ":t")
-        return string.format("%s/%s/%s.json", vim.fn.stdpath("data"), "git-worktree.nvim", vim.fn.sha256(git_repo))
-        -- return Path:mkdir(vim.fn.stdpath("data"), "git-worktree.nvim")
-    else
-        error("Could not save git worktree state: failed to determine git repo name")
+        return Path:new(string.format("%s/%s/%s.json", vim.fn.stdpath("data"), "git-worktree.nvim",
+            vim.fn.sha256(git_repo)))
     end
+
+    return nil
 end
 
 ---@return WorktreeData | nil
 function WorktreeState:read()
-    local path = Path:new(self:path())
-    if path:exists() then
-        return vim.fn.json_decode(path:read())
+    local path = self:path()
+    if path ~= nil and path:exists() then
+        return vim.fn.json_decode(Path:new(path):read())
     end
+
     return nil
 end
 
