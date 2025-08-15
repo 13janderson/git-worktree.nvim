@@ -75,4 +75,6 @@ end)
 
 Hooks.register(Hooks.type.DELETE, function()
     vim.cmd(config.update_on_change_command)
+    -- On a worktree being deleted by us, we want to make sure that there is no reference of this worktree in
+    -- our state
 end)

@@ -7,7 +7,6 @@
 [![Nix][nix-shield]][nix-url]
 
 <!-- markdownlint-restore -->
-
 A simple wrapper around git worktree operations, create, switch, and delete.
 There is some assumed workflow within this plugin, but pull requests are
 welcomed to fix that).
@@ -63,7 +62,7 @@ require("git-worktree").switch_worktree("feat-69")
 require("git-worktree").delete_worktree("feat-69")
 ```
 
-## Additional Features
+## My Additional Features
 
 Fixes bug with harpoon usage where harpoon would fail to correctly load new data on the cwd changing when we switch workspaces... this is resolved by simply reloading harpoon entirely.
 
