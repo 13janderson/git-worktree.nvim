@@ -52,6 +52,7 @@ function M.has_worktree(path_str, branch, cb)
 
     job:after(function()
         Log.debug('calling after')
+
         cb(found)
     end)
 
@@ -112,7 +113,6 @@ function M.toplevel_dir()
 end
 
 function M.has_branch(branch, opts, cb)
-    print("branch", branch)
     local found = false
     local args = { 'branch', '--format=%(refname:short)' }
     opts = opts or {}
@@ -124,9 +124,6 @@ function M.has_branch(branch, opts, cb)
         command = 'git',
         args = args,
         on_stdout = function(_, data)
-            if data == branch then
-                print("data", data)
-            end
             found = found or data == branch
         end,
         cwd = vim.loop.cwd(),
@@ -303,6 +300,24 @@ function M.delete_branch_job(branch)
             Log.debug('git branch -D')
         end,
     }
+end
+
+---@return table | nil
+function M.get_branches()
+    local args = { 'branch', '--format=%(refname:short)' }
+
+    local branches = {}
+    local job = Job:new {
+        command = 'git',
+        args = args,
+        on_stdout = function(_, data)
+            table.insert(branches, data)
+        end,
+    }
+
+    job:sync()
+
+    return branches
 end
 
 return M

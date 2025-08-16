@@ -15,8 +15,19 @@ end
 
 -- Keybindings
 vim.keymap.set("n", "<leader>wa", function()
+    local id = "GitBranchComplete"
+
+    -- Temporarily add this global function so that we can use it for completion
+    _G[id] = function() return git.get_branches() end
     -- TODO, is there anyway to add autocomplete for git branches here?
-    local success, worktree_name = pcall(function() return vim.fn.input(string.format("worktree:")) end)
+    local success, worktree_name = pcall(function()
+        return vim.fn.input({
+            prompt = string.format("worktree:"),
+            completion = string.format("customlist,v:lua.%s", id)
+        })
+    end)
+    _G[id] = nil
+
     if (not success) then
         return
     end
