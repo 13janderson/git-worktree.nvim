@@ -1,3 +1,27 @@
+## What i've added to the original plugin 
+- My additions are in the form of an opinionated out-of-the-box configuration and statefulness.
+- git-worktree.nvim did not come with any keybindings configured, it just gave you the power 
+  to make nice neovim workflows with worktreees. I have yieleded this power and made a 100 line lua configuration
+  with it - all in [plugin.lua](./plugin/plugin.lua). This configuration is loaded on neovim startup.
+
+Keymaps:
+- `<leader>wa` prompts you for a worktree name, creates a worktree with that name and switches you to that worktree.
+- `<leader>ws` to load telescope picker... within this picker `<C-d>` deletes
+an entry, `<CR>` selects an entry and switches you to that workspace, `<C-f>`
+force deletes an entry.
+- `<leader>wl` to go to the previous workspace, if one exists.
+  - This is achieved by adding persistent state to the plugin as detailed below.
+
+Git Submodules are automatically updated on changing between worktrees.
+
+**Worktree state is persisted between sessions. That is, the current and previous worktrees are remembered`
+- If you close neovim whilst in a worktree, you will go back into that worktree on neovim restarting.
+- Alternate/previous sessions are also persisted.
+
+This workflow all works perfectly with harpoon... you can have separate harpoon lists on a per-worktree basis making worktrees a breeze to work with.
+- you want to make a small change on your last worktree? hit `<leader>wl`, harpoon your way to the file, perform the change, `<leader>wl` and you are back
+  where you started.
+
 <!-- markdownlint-disable -->
 
 ![git-worktree.nvim](https://socialify.git.ci/polarmutex/git-worktree.nvim/image?font=Source%20Code%20Pro&name=1&stargazers=1&theme=Dark)
@@ -61,24 +85,6 @@ require("git-worktree").switch_worktree("feat-69")
 -- Example:
 require("git-worktree").delete_worktree("feat-69")
 ```
-
-## My Additional Features
-
-Fixes bug with harpoon usage where harpoon would fail to correctly load new data on the cwd changing when we switch workspaces... this is resolved by simply reloading harpoon entirely.
-
-Keymaps:
-- `<leader>wa` prompts you for a worktree name, creates a worktree with that name and switches you to that worktree.
-- `<leader>ws` to load telescope picker... within this picker `<C-d>` deletes
-an entry, `<CR>` selects an entry and switches you to that workspace, `<C-f>`
-force deletes an entry.
-- `<leader>wl` to go to the previous workspace, if one exists.
-
-
-Git Submodules are automatically updated on changing between worktrees.
-
-**Worktree state is persisted between sessions. That is, the current and previous worktrees are remembered`
-- If you close neovim whilst in a worktree, you will go back into that worktree on neovim restarting.
-- Alternate/previous sessions are also persisted.
 
 
 ## Advanced Configuration
