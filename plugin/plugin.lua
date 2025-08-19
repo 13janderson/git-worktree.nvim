@@ -18,7 +18,21 @@ vim.keymap.set("n", "<leader>wa", function()
     local id = "GitBranchComplete"
 
     -- Temporarily add this global function so that we can use it for completion
-    _G[id] = function() return git.get_branches() end
+    _G[id] = function(_, cmdline, _)
+        print("cmdline", cmdline)
+        local branches = git.get_branches()
+        if branches then
+            -- Only return the branches that start with what the user has typed
+            -- i.e cmdline... That way when they press tab, they get completions which actually
+            -- append to what they are currently writing, rather than displacing it
+            local branches_with_prefix = vim.tbl_filter(function(branch)
+                local find = string.find(branch, "^" .. cmdline)
+                return find ~= nil
+            end, branches)
+
+            return branches_with_prefix
+        end
+    end
 
     local success, worktree_name = pcall(function()
         return vim.fn.input({
