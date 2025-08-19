@@ -21,14 +21,25 @@ vim.keymap.set("n", "<leader>wa", function()
     _G[id] = function(_, cmdline, _)
         print("cmdline", cmdline)
         local branches = git.get_branches()
+        local cmdline_escaped = string.gsub(cmdline, "%-", "%%%-")
         if branches then
             -- Only return the branches that start with what the user has typed
             -- i.e cmdline... That way when they press tab, they get completions which actually
             -- append to what they are currently writing, rather than displacing it
             local branches_with_prefix = vim.tbl_filter(function(branch)
-                local find = string.find(branch, "^" .. cmdline)
+                -- Have to escape - in cmdline as this is a special regex char in lua
+                local find = string.find(branch, "^" .. cmdline_escaped)
                 return find ~= nil
             end, branches)
+
+            -- Do a more best effort approach which is to return all branches that contain the cmdline that
+            -- the user has typed.
+            if #branches_with_prefix == 0 then
+                branches_with_prefix = vim.tbl_filter(function(branch)
+                    local find = string.find(branch, cmdline_escaped)
+                    return find ~= nil
+                end, branches)
+            end
 
             return branches_with_prefix
         end
