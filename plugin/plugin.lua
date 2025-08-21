@@ -61,7 +61,7 @@ vim.keymap.set("n", "<leader>wa", function()
 
     -- Put new worktrees in git root dir
     local worktree_path = git.gitroot_dir() .. "/" .. worktree_name
-    worktree.create_worktree(worktree_path, worktree_name)
+    worktree.create_worktree(worktree_path, worktree_name, worktree_name)
 end)
 
 vim.keymap.set("n", "<leader>ws", function()

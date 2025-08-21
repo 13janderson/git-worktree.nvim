@@ -221,6 +221,7 @@ function M.setbranch_job(path, branch, upstream)
         cwd = path,
         on_start = function()
             Log.debug(set_branch_cmd .. ' ' .. table.concat(set_branch_args, ' '))
+            Log.debug(vim.inspect(table.concat(set_branch_args, ' ')))
         end,
     }
 end

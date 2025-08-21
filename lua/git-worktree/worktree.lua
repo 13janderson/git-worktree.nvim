@@ -138,7 +138,8 @@ function M.create(path, branch, upstream)
 
                     local create_wt_job = Git.create_worktree_job(path, branch, found_branch, upstream, found_upstream)
 
-                    if found_branch and found_upstream and branch ~= upstream then
+                    -- if found_branch and found_upstream and branch ~= upstream then
+                    if found_branch and found_upstream then
                         local set_remote = Git.setbranch_job(path, branch, upstream)
                         create_wt_job:and_then_on_success(set_remote)
                     end
