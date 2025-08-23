@@ -29,7 +29,7 @@ local function log(level, msg)
     end
     -- vim.api.nvim_echo(msg_chunks, false, {})
     -- vim.notify(msg, level)
-    print(msg)
+    -- print(msg)
 end
 
 --- @param fmt string

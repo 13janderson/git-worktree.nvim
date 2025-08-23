@@ -90,6 +90,7 @@ local function GitSubmoduleUpdate()
         command = 'git',
         args = { 'submodule', 'update', '--init', '--recursive' }
     })
+    job:start()
 end
 
 Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
@@ -115,8 +116,19 @@ Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
 end)
 
 
-Hooks.register(Hooks.type.DELETE, function()
+Hooks.register(Hooks.type.DELETE, function(path)
     vim.cmd(config.update_on_change_command)
     -- On a worktree being deleted by us, we want to make sure that there is no reference of this worktree in
     -- our state
+    local State = state:data()
+
+    -- I think this works?
+    if State.current_worktree == path then
+        State.current_worktree = State.previous_worktree
+        State.previous_worktree = nil
+    elseif State.previous_worktree == path then
+        State.previous_worktree = nil
+    end
+
+    state:write()
 end)

@@ -24,13 +24,12 @@ end
 
 ---@return Path | nil
 function WorktreeState:path()
+    local git = require("git-worktree.git")
     local git_dir = git:gitroot_dir()
-    local git_repo = nil
 
     if git_dir ~= nil then
-        git_repo = vim.fn.fnamemodify(git_dir, ":t")
         return Path:new(string.format("%s/%s/%s.json", vim.fn.stdpath("data"), "git-worktree.nvim",
-            vim.fn.sha256(git_repo)))
+            vim.fn.sha256(git_dir)))
     end
 
     return nil
