@@ -24,7 +24,6 @@ end
 
 ---@return Path | nil
 function WorktreeState:path()
-    local git = require("git-worktree.git")
     local git_dir = git:gitroot_dir()
 
     if git_dir ~= nil then
