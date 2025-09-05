@@ -2,6 +2,7 @@ local worktree = require("git-worktree")
 local git = require("git-worktree.git")
 local Job = require('plenary.job')
 local state = require("git-worktree.state")
+local tmux = require("git-worktree.tmux")
 
 local function isWorktree(path)
     return not (git.gitroot_dir() == path)
@@ -106,6 +107,11 @@ Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
     state:update(updated_data)
 
     GitSubmoduleUpdate()
+
+    -- Change tmux panes
+    if tmux.is_tmux_session() then
+        tmux.change_session_cwds(prev_path, path)
+    end
 end)
 
 
