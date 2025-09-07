@@ -20,7 +20,6 @@ vim.keymap.set("n", "<leader>wa", function()
 
     -- Temporarily add this global function so that we can use it for completion
     _G[id] = function(_, cmdline, _)
-        print("cmdline", cmdline)
         local branches = git.get_branches()
         local cmdline_escaped = string.gsub(cmdline, "%-", "%%%-")
         if branches then

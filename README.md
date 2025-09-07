@@ -3,6 +3,8 @@
 - git-worktree.nvim did not come with any keybindings configured, it just gave you the power 
   to make nice neovim workflows with worktreees. I have yieleded this power and made a 100 line lua configuration
   with it - all in [plugin.lua](./plugin/plugin.lua). This configuration is loaded on neovim startup.
+- Stateful: current and previous worktrees persisted outside of neovim.
+- Tmux integration: changing CWDs of windows when we switch worktrees.
 
 Keymaps:
 - `<leader>wa` prompts you for a worktree name, creates a worktree with that name and switches you to that worktree.
@@ -14,7 +16,7 @@ force deletes an entry.
 
 Git Submodules are automatically updated on changing between worktrees.
 
-**Worktree state is persisted between sessions. That is, the current and previous worktrees are remembered`
+**Worktree state is persisted between sessions. That is, the current and previous worktrees are remembered**
 - If you close neovim whilst in a worktree, you will go back into that worktree on neovim restarting.
 - Alternate/previous sessions are also persisted.
 
