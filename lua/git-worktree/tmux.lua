@@ -83,6 +83,8 @@ function M.change_session_cwds(prev_path, path)
     for idx, window_idx in ipairs(inactive_windows) do
         if cwds[idx] == prev_path then
             M.send_keys(window_idx, string.format("cd %s", path))
+            -- Clear shell
+            M.send_keys(window_idx, "clear")
         end
     end
 end
