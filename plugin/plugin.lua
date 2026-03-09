@@ -1,8 +1,8 @@
-local worktree = require("git-worktree")
-local git = require("git-worktree.git")
+local worktree = require('git-worktree')
+local git = require('git-worktree.git')
 local Job = require('plenary.job')
-local state = require("git-worktree.state")
-local tmux = require("git-worktree.tmux")
+local state = require('git-worktree.state')
+local tmux = require('git-worktree.tmux')
 
 local function isWorktree(path)
     return not (git.gitroot_dir() == path)
@@ -15,20 +15,20 @@ if state_current_worktree then
 end
 
 -- Keybindings
-vim.keymap.set("n", "<leader>wa", function()
-    local id = "GitBranchComplete"
+vim.keymap.set('n', '<leader>wa', function()
+    local id = 'GitBranchComplete'
 
     -- Temporarily add this global function so that we can use it for completion
     _G[id] = function(_, cmdline, _)
         local branches = git.get_branches()
-        local cmdline_escaped = string.gsub(cmdline, "%-", "%%%-")
+        local cmdline_escaped = string.gsub(cmdline, '%-', '%%%-')
         if branches then
             -- Only return the branches that start with what the user has typed
             -- i.e cmdline... That way when they press tab, they get completions which actually
             -- append to what they are currently writing, rather than displacing it
             local branches_with_prefix = vim.tbl_filter(function(branch)
                 -- Have to escape - in cmdline as this is a special regex char in lua
-                local find = string.find(branch, "^" .. cmdline_escaped)
+                local find = string.find(branch, '^' .. cmdline_escaped)
                 return find ~= nil
             end, branches)
 
@@ -46,58 +46,58 @@ vim.keymap.set("n", "<leader>wa", function()
     end
 
     local success, worktree_name = pcall(function()
-        return vim.fn.input({
-            prompt = string.format("worktree:"),
-            completion = string.format("customlist,v:lua.%s", id)
-        })
+        return vim.fn.input {
+            prompt = string.format('worktree:'),
+            completion = string.format('customlist,v:lua.%s', id),
+        }
     end)
 
     _G[id] = nil
 
-    if (not success) then
+    if not success then
         return
     end
 
     -- Put new worktrees in git root dir
-    local worktree_path = git.gitroot_dir() .. "/" .. worktree_name
-    worktree.create_worktree(worktree_path, worktree_name, "origin/" .. worktree_name)
+    local worktree_path = git.gitroot_dir() .. '/' .. worktree_name
+    worktree.create_worktree(worktree_path, worktree_name, 'origin/' .. worktree_name)
 end)
 
-vim.keymap.set("n", "<leader>ws", function()
-    local telescope_worktree = require('telescope').load_extension("git_worktree")
+vim.keymap.set('n', '<leader>ws', function()
+    local telescope_worktree = require('telescope').load_extension('git_worktree')
     telescope_worktree.git_worktree()
 end)
 
-vim.keymap.set("n", "<leader>wl", function()
+vim.keymap.set('n', '<leader>wl', function()
     local previous_worktrree = state:data().previous_worktree
     -- Switches to your last worktree
     if previous_worktrree ~= nil and isWorktree(previous_worktrree) then
         worktree.switch_worktree(previous_worktrree)
     else
-        print("no previous worktree")
+        print('no previous worktree')
     end
 end)
 
 -- Hooks
-local Hooks = require("git-worktree.hooks")
+local Hooks = require('git-worktree.hooks')
 local config = require('git-worktree.config')
 local update_on_switch = Hooks.builtins.update_current_buffer_on_switch
 
 local function GitSubmoduleUpdate()
     ---@diagnostic disable-next-line
-    local job = Job:new({
+    local job = Job:new {
         command = 'git',
-        args = { 'submodule', 'update', '--init', '--recursive' }
-    })
+        args = { 'submodule', 'update', '--init', '--recursive' },
+    }
     job:start()
 end
 
 Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
-    vim.notify("On Worktree " .. path)
+    -- vim.notify('On Worktree ' .. path)
     update_on_switch(path, prev_path)
 
     local updated_data = {
-        current_worktree = path
+        current_worktree = path,
     }
 
     if isWorktree(prev_path) then
@@ -113,7 +113,6 @@ Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
         tmux.change_session_cwds(prev_path, path)
     end
 end)
-
 
 Hooks.register(Hooks.type.DELETE, function(path)
     vim.cmd(config.update_on_change_command)
