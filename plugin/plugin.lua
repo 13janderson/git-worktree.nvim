@@ -3,6 +3,9 @@ local git = require('git-worktree.git')
 local Job = require('plenary.job')
 local state = require('git-worktree.state')
 local tmux = require('git-worktree.tmux')
+local has_persistence, persistence = pcall(function()
+    return require('persistence')
+end)
 
 local function isWorktree(path)
     return not (git.gitroot_dir() == path)
@@ -11,7 +14,13 @@ end
 -- Load state and load the current_worktree if there is one saved
 local state_current_worktree = state:data().current_worktree
 if state_current_worktree then
+    -- The SWITCH hook will handle loading persistence session if one exists
     worktree.switch_worktree(state_current_worktree)
+else
+    -- Only load persistence when not in a worktree
+    if has_persistence then
+        persistence.load()
+    end
 end
 
 -- Keybindings
@@ -93,8 +102,31 @@ local function GitSubmoduleUpdate()
 end
 
 Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
-    -- vim.notify('On Worktree ' .. path)
-    update_on_switch(path, prev_path)
+    vim.notify('On Worktree ' .. path)
+
+    -- Check if persistence session exists for this worktree
+    -- If so, load it instead of opening the file explorer
+    local session_loaded = false
+    if has_persistence then
+        -- Temporarily change to the new path to check/load session
+        local current_dir = vim.fn.getcwd()
+        local ok = pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(path))
+        if ok then
+            local session_file = persistence.current()
+            if vim.fn.filereadable(session_file) == 1 then
+                -- Session exists, load it
+                persistence.load()
+                session_loaded = true
+            end
+            -- Restore to new worktree directory (persistence.load() may change it)
+            pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(path))
+        end
+    end
+
+    -- Only open file explorer if no session was loaded
+    if not session_loaded then
+        update_on_switch(path, prev_path)
+    end
 
     local updated_data = {
         current_worktree = path,

@@ -1,10 +1,11 @@
-## What i've added to the original plugin 
+## What i've added to the original plugin
 - My additions are in the form of an opinionated out-of-the-box configuration and statefulness.
-- git-worktree.nvim did not come with any keybindings configured, it just gave you the power 
+- git-worktree.nvim did not come with any keybindings configured, it just gave you the power
   to make nice neovim workflows with worktreees. I have yieleded this power and made a 100 line lua configuration
   with it - all in [plugin.lua](./plugin/plugin.lua). This configuration is loaded on neovim startup.
 - Stateful: current and previous worktrees persisted outside of neovim.
 - Tmux integration: changing CWDs of windows when we switch worktrees.
+- **Session-aware worktree switching**: If [persistence.nvim](https://github.com/folke/persistence.nvim) is installed, when you switch to a worktree that has a saved session, that session will be loaded instead of opening the file explorer. If no session exists, it falls back to the file explorer (`e .`).
 
 Keymaps:
 - `<leader>wa` prompts you for a worktree name, creates a worktree with that name and switches you to that worktree.
@@ -49,6 +50,7 @@ welcomed to fix that).
 ### Optional
 
 -   [`telescope.nvim`](https://github.com/nvim-telescope/telescope.nvim)
+-   [`persistence.nvim`](https://github.com/folke/persistence.nvim) - enables session restoration when switching worktrees
 
 ## Installation
 
@@ -56,7 +58,7 @@ welcomed to fix that).
 {
   '13janderson/git-worktree.nvim',
   version = '^2',
-  dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim"}
+  dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim", "folke/persistence.nvim"}
 }
 ```
 
