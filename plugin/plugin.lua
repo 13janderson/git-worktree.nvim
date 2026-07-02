@@ -101,15 +101,27 @@ local function GitSubmoduleUpdate()
     job:start()
 end
 
+
 Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
     vim.notify('On Worktree ' .. path)
+
+    -- Save previous worktree session before switching.
+    -- The cwd has already changed to the new worktree at this point, so we
+    -- temporarily go back to the previous worktree to save its session.
+    if has_persistence and prev_path then
+        local ok = pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(prev_path))
+        if ok then
+            persistence.save()
+            -- Return to the new worktree directory
+            pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(path))
+        end
+    end
 
     -- Check if persistence session exists for this worktree
     -- If so, load it instead of opening the file explorer
     local session_loaded = false
     if has_persistence then
         -- Temporarily change to the new path to check/load session
-        local current_dir = vim.fn.getcwd()
         local ok = pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(path))
         if ok then
             local session_file = persistence.current()
@@ -117,6 +129,7 @@ Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
                 -- Session exists, load it
                 persistence.load()
                 session_loaded = true
+                print("session_loaded", session_loaded)
             end
             -- Restore to new worktree directory (persistence.load() may change it)
             pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(path))
