@@ -101,7 +101,6 @@ local function GitSubmoduleUpdate()
     job:start()
 end
 
-
 Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
     vim.notify('On Worktree ' .. path)
 
@@ -129,7 +128,6 @@ Hooks.register(Hooks.type.SWITCH, function(path, prev_path)
                 -- Session exists, load it
                 persistence.load()
                 session_loaded = true
-                print("session_loaded", session_loaded)
             end
             -- Restore to new worktree directory (persistence.load() may change it)
             pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(path))
