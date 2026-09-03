@@ -37,6 +37,31 @@ local switch_worktree = function(prompt_bufnr)
     git_worktree.switch_worktree(worktree_path)
 end
 
+-- Create a worktree from the latest fetched origin/main
+-- @param prompt_bufnr number: the prompt buffer number
+-- @return nil
+local create_worktree_from_main = function(prompt_bufnr)
+    actions.close(prompt_bufnr)
+    local path = vim.fn.input('worktree:', '')
+    if path == '' then
+        Log.error('No worktree path provided')
+        return
+    end
+    local branch = vim.fn.input('New branch name (empty for detached HEAD) > ', '')
+
+    -- Auto-detect the remote default branch (main vs master, etc.)
+    local default_ref = vim.fn.systemlist('git rev-parse --abbrev-ref origin/HEAD')[1] or ''
+    if vim.v.shell_error ~= 0 or default_ref:match('^fatal:') then
+        default_ref = ''
+    end
+    default_ref = default_ref:gsub('^origin/', '')
+    if default_ref == '' then
+        default_ref = 'main'
+    end
+
+    git_worktree.create_worktree_from_ref(path, default_ref, branch ~= '' and branch or nil)
+end
+
 -- Toggle the forced deletion of the next worktree
 -- @return nil
 local toggle_forced_deletion = function()
@@ -138,7 +163,7 @@ local create_input_prompt = function(opts, cb)
     opts.pattern = nil -- show all branches that can be tracked
 
     local prefix = opts.prefix or ''
-    local path = vim.fn.input('Path to subtree > ', prefix .. opts.branch)
+    local path = vim.fn.input('worktree:', prefix .. opts.branch)
     if path == '' then
         Log.error('No worktree path provided')
         return
@@ -315,7 +340,6 @@ local telescope_git_worktree = function(opts)
                 map('n', '<c-d>', delete_worktree)
                 map('i', '<c-f>', toggle_forced_deletion)
                 map('n', '<c-f>', toggle_forced_deletion)
-
                 return true
             end,
         })

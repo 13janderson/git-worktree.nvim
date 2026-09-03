@@ -87,6 +87,28 @@ vim.keymap.set('n', '<leader>wl', function()
     end
 end)
 
+vim.keymap.set('n', '<leader>wA', function()
+    local path = vim.fn.input('worktree:')
+    if path == '' then
+        vim.notify('No path provided, aborting.', vim.log.levels.WARN)
+        return
+    end
+    -- Derive branch name from the last path segment (same convention as <leader>wa)
+    local branch = path:gsub('/$', ''):match('([^/]+)$') or path
+
+    -- Auto-detect the remote default branch (main vs master, etc.)
+    local default_ref = vim.fn.systemlist('git rev-parse --abbrev-ref origin/HEAD')[1] or ''
+    if vim.v.shell_error ~= 0 or default_ref:match('^fatal:') then
+        default_ref = ''
+    end
+    default_ref = default_ref:gsub('^origin/', '')
+    if default_ref == '' then
+        default_ref = 'main'
+    end
+
+    worktree.create_worktree_from_ref(path, default_ref, branch)
+end)
+
 -- Hooks
 local Hooks = require('git-worktree.hooks')
 local config = require('git-worktree.config')

@@ -1,4 +1,5 @@
 local Path = require('plenary.path')
+local Job = require('plenary.job')
 
 local Git = require('git-worktree.git')
 local Log = require('git-worktree.logger')
@@ -31,9 +32,11 @@ local function change_dirs(path)
     -- vim.loop.chdir(worktree_path)
     if Path:new(worktree_path):exists() then
         local cmd = string.format('%s %s', Config.change_directory_command, worktree_path)
-        Log.debug('Changing to directory  %s', worktree_path)
+        print('[git-worktree] running: ' .. cmd)
         vim.cmd(cmd)
+        print('[git-worktree] cd done, new cwd: ' .. vim.inspect(vim.loop.cwd()))
     else
+        print('[git-worktree] path does not exist: ' .. vim.inspect(worktree_path))
         Log.error('Could not change to directory: %s', worktree_path)
     end
 
@@ -71,19 +74,23 @@ local M = {}
 --Switch the current worktree
 ---@param path string?
 function M.switch(path)
+    print('[git-worktree] switch called: ' .. vim.inspect(path))
     if path == nil then
         change_dirs(path)
     else
         if path == vim.loop.cwd() then
+            print('[git-worktree] switch: path == cwd, returning early')
             return
         end
         Git.has_worktree(path, nil, function(found)
+            print('[git-worktree] has_worktree result: ' .. vim.inspect(found) .. ' for ' .. vim.inspect(path))
             if not found then
                 Log.error('Worktree does not exists, please create it first %s ', path)
                 return
             end
 
             vim.schedule(function()
+                print('[git-worktree] switch: changing dirs to ' .. vim.inspect(path))
                 local prev_path = change_dirs(path)
                 Hooks.emit(Hooks.type.SWITCH, path, prev_path)
             end)
@@ -156,6 +163,84 @@ function M.create(path, branch, upstream)
             end)
         end)
     end)
+end
+
+--- CREATE FROM REF ---
+
+--Create a worktree from a fetched remote ref (e.g. origin/main).
+--Fetches the ref first, then creates the worktree so you never accidentally
+--create a new branch from HEAD when the remote branch hasn't been fetched yet.
+--The worktree is created detached, then a local branch is checked out inside it
+--so that NO upstream is set automatically (same behaviour as <leader>wa).
+---@param path string
+---@param ref string  the remote ref name, e.g. 'main' or 'feature-x'
+---@param new_branch? string  optional local branch name (nil = detached HEAD)
+function M.create_from_ref(path, ref, new_branch)
+    print('[git-worktree] create_from_ref start: path=' .. vim.inspect(path) .. ' ref=' .. vim.inspect(ref) .. ' branch=' .. vim.inspect(new_branch))
+    local fetch_job = Git.fetch_job('origin', ref)
+    fetch_job:after_success(function()
+        vim.schedule(function()
+            print('[git-worktree] fetch success')
+            -- Step 1: create a detached worktree at origin/ref
+            local add_args = { 'worktree', 'add', '--detach', path, 'origin/' .. ref }
+            print('[git-worktree] add args: ' .. vim.inspect(add_args))
+            local add_job = Job:new {
+                command = 'git',
+                args = add_args,
+                cwd = vim.loop.cwd(),
+            }
+
+            add_job:after_success(function()
+                vim.schedule(function()
+                    print('[git-worktree] add success')
+                    if new_branch then
+                        -- Step 2: create a local branch (no upstream tracking) inside the new worktree
+                        local branch_job = Job:new {
+                            command = 'git',
+                            args = { 'checkout', '-b', new_branch },
+                            cwd = path,
+                        }
+                        branch_job:after_success(function()
+                            vim.schedule(function()
+                                print('[git-worktree] branch checkout success, switching...')
+                                Hooks.emit(Hooks.type.CREATE, path, new_branch, nil)
+                                M.switch(path)
+                            end)
+                        end)
+                        branch_job:after_failure(function(e)
+                            vim.schedule(function()
+                                print('[git-worktree] branch checkout FAILED')
+                                failure('create_from_ref branch', { 'checkout', '-b', new_branch }, path)(e)
+                            end)
+                        end)
+                        branch_job:start()
+                    else
+                        print('[git-worktree] no branch, switching...')
+                        Hooks.emit(Hooks.type.CREATE, path, nil, nil)
+                        M.switch(path)
+                    end
+                end)
+            end)
+
+            add_job:after_failure(function(e)
+                vim.schedule(function()
+                    print('[git-worktree] add FAILED')
+                    failure('create_from_ref', add_args, path)(e)
+                end)
+            end)
+
+            add_job:start()
+        end)
+    end)
+    fetch_job:after_failure(function(e)
+        vim.schedule(function()
+            print('[git-worktree] fetch FAILED')
+            print('[git-worktree] stderr: ' .. vim.inspect(e:stderr_result()))
+            print('[git-worktree] stdout: ' .. vim.inspect(e:result()))
+            failure('fetch', { 'fetch', 'origin', ref }, vim.loop.cwd())(e)
+        end)
+    end)
+    fetch_job:start()
 end
 
 --- DELETE ---

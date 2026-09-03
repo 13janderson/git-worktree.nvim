@@ -208,6 +208,20 @@ function M.fetchall_job(path)
     }
 end
 
+--- @param remote string
+--- @param ref string
+--- @return Job
+function M.fetch_job(remote, ref)
+    return Job:new {
+        command = 'git',
+        args = { 'fetch', remote, ref },
+        cwd = vim.loop.cwd(),
+        on_start = function()
+            Log.debug('git fetch %s %s', remote, ref)
+        end,
+    }
+end
+
 --- @param path string
 --- @param branch string
 --- @param upstream string

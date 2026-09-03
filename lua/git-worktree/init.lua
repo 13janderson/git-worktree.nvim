@@ -44,4 +44,12 @@ function M.delete_worktree(path, force, opts)
     Worktree.delete(path, force, opts)
 end
 
+--Create a worktree from a fetched remote ref
+---@param path string
+---@param ref string
+---@param new_branch? string
+function M.create_worktree_from_ref(path, ref, new_branch)
+    Worktree.create_from_ref(path, ref, new_branch)
+end
+
 return M

@@ -15,7 +15,7 @@ function WorktreeState:new()
 
     local state = setmetatable({}, self)
     state._data = state:read() or {
-        previous_workree = nil,
+        previous_worktree = nil,
         current_worktree = nil,
     }
 
